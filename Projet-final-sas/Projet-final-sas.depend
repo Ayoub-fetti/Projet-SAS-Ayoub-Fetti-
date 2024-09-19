@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1726755795 source:c:\users\lenovo\desktop\projet-sas-ayoub-fetti-\projet-final-sas\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<ctype.h>
+
