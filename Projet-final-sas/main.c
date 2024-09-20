@@ -75,7 +75,7 @@ for ( int i = 0; i < strlen(password); i++)
     if (isdigit(password[i])) hasDigit = 1;
 }
 
-return  strlen(password) >= 8 && hasUpper && hasLower && hasDigit && contientspecialchar(password);
+return  strlen(password) >= 8 && hasUpper && hasLower && hasDigit && contient_special_char(password);
 }
 
 
