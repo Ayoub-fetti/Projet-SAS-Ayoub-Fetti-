@@ -1,313 +1,293 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <conio.h>
 
-#define MAX_USERS  100
+#define MAX_UTLISATEURS 100
 #define MAX_RECLAMATIONS 100
 
 
-typedef struct                  // une structure pour Utilisateurs
-{
-char  username[50];
-char  password[50];
-char   role[10];
-int estVerrouille;       // bach n3ref wach compte wach verrouiller ou non ( 1 = oui et 0 = non )
 
-}Utilisateur;
-
-
-
-typedef struct             // une structure pour reclamations
-{
-    int id;
-    int priorite; // 1 basse, 2 moyenne, 3 haute
-    char motif[50];
-    char description[500];
-    char categorie[50];
-    char status[50];     // en cours, resolu, rejecte
-    char date[50];       // dd/mm/yy
-    char client_nom[50];
-
-} Reclamation;
-
-
-Utilisateur user[MAX_USERS];
-Reclamation rec[MAX_RECLAMATIONS];             // deux tableaux pour stocker utilisateurs et reclamations
-
-int usercount = 0;
-int reccount = 0;                              // deux variable pour tracer le nombre d'utilisateur et reclamations
-
-
-
-
-
-int contient_special_char( char * password)    // ***fonction pour inscrire et verifier les critreres de password***
-{
-   char specialchar[] = "! @ # $ % ^ & * ( ) - _ = + { } [ ] | \ : ; ' , . < > / ? ~";
-   for ( int i=0 ; i < strlen(password); i++)
-   {
-      for ( int j=0 ; j < strlen(specialchar); j++)
-      {
-          if (password[i] = specialchar[j])
-            return 1;
-   }
-}
-return 0;
-}
-
-
-
-int passwordOK(char * password, char * username)
-{
-    int hasUpper = 0, hasLower = 0, hasDigit = 0;
-
-if (strstr(password, username) != NULL)              // verifier si le password contient le nom de l'utilisateur
-{
-    return 0;
-}
-
-for ( int i = 0; i < strlen(password); i++)
-{
-    if (isupper(password[i])) hasUpper = 1;
-    if (islower(password[i])) hasLower = 1;
-    if (isdigit(password[i])) hasDigit = 1;
-}
-
-return  strlen(password) >= 8 && hasUpper && hasLower && hasDigit && contient_special_char(password);
-}
-
-
-
-
-void sign_Up()                       // ***fonction pour creer un compte***
-{
-
-    Utilisateur newuser;
-    printf("Entrer un nom d'utilisateur :\n");
-    scanf(" %[^\n]s", newuser.username);
-
-    while(1)
-    {
-        printf("Entrer un mot de passe :\n");
-        scanf("%s", newuser.password);
-
-        if (ispasswordOK(newuser.password,newuser.username))
-        {
-            break;
-        }
-        else
-        {
-           printf("Mot de passe invalide , le mot de passe doit contient au minimum 8 caractere:\n Une Majuscule,\n Une miniscule,\n Un chiffre,\n Un caractere special,\n Ne doit pas contient le nom d'utilisateur.\n");
-        }
-    }
-    printf("Choisir un role (Administrateur, Agent, Client) :\n");
-    scanf("%s", newuser.role);
-
-    newuser.estVerrouille = 0;
-    user[usercount++] = newuser;                          // ajouter l'utilisateur dans le tableau user[]
-
-    printf("Votre inscription a ete completee avec succes");
-}
-
-
-
-
-int sign_In()                            // ***fonction pour connecter un compte***
+typedef struct                  // structure pour utilisateur
 {
     char username[50];
     char password[50];
-    int essai = 0;
+    char role[20];
+    int estVerrouille;   // Indique si le compte est verrouillé (0 = non, 1 = oui)
+} Utilisateur;
+
+typedef struct                   // structure pour reclamation
+{
+    int id;
+    char motif[50];
+    char description[200];
+    char categorie[50];
+    char status[20];               // en cours, resolu, rejete
+    char date[20];
+    char client_nom[50];
+    int priorite;                     // 1 = basse, 2 = moyenne, 3 = haute
+    time_t date_ajout;
+    char resolutionDate[20];
+} Reclamation;
+
+Utilisateur user[MAX_UTLISATEURS];                      // tableaux pour stocker utilisateur et les reclamations
+Reclamation rec[MAX_RECLAMATIONS];
+
+int usercount = 0;                      // varibale pour tracer le nombre d'utilisateurs et les reclamations
+int reccount = 0;
 
 
-    while (essai < 3)
-    {
-        printf("Entrer le nom d'utilisateur:\n");
-        scanf(" %[^\n]s", username);
-        printf("Entrer le mot de passe:\n");
-        scanf(" %[^\n]s", password);
 
-        for ( int i=0; i< usercount; i++ )
+
+
+
+  int contient_special_char(char *password)                  // ***fonction pour s'inscrire et verifier les criteres de mot de pass
+{
+    char specialchar[] = " ! @ # $ % ^ & * µ ( ) { } [ ] ?";
+
+    for (int i = 0; i < strlen(password); i++)
         {
-            if (strcmp(user[i].username,username) == 0 && strcasecmp(password[i].password,password) == 0)
+        for (int j = 0; j < strlen(specialchar); j++)
+        {
+            if (password[i] == specialchar[j])
             {
-                if (user[i].estVerrouille == 1)
-                {
-                    printf("Le compte est verouille. Reesseayer plus tard !\n");
-                    return 0;
-                }
-
-                printf("Vous etes connecter avec succees\n");
-
-               return 1;
+                return 1;
             }
         }
-        essai++;
-        printf("nom d'utilisateur ou mot de passe incorrect. Il vous reste %d tentatives.\n", 3 - essai);
-    }
-    for ( int i=0; i< usercount; i++ )
-        {
-            if (strcmp(user[i].username,username) == 0 && strcasecmp(password[i].password,password) == 0)
-            {
-                user[i].estVerrouille == 1;
-                printf("Le compte est verouiller apres 3 tentatives echouees. Reessayer dans 15 minites.");
-                break;
-            }
         }
-return 0;
+    return 0;
 }
 
- int isAdministrateur(Utilisateur user)                       // pour verifier le role de l'utilisateur
- {
-     return strcmp(user.role, "admin") == 0;
- }
- int isAgent(Utilisateur user)
- {
-     return strcmp(user.role, "agent") == 0;
- }
- int isClient(Utilisateur user)
- {
-     return strcmp(user.role, "client") === 0;
- }
+int isPasswordOK(char *password, char *username)
+{
+    int hasUpper = 0, hasLower = 0, hasDigit = 0;
+
+    if (strstr(password, username) != NULL)
+        {                     // pour verifier si le mot de passe contient le nom d'utilisateur
+        return 0;
+        }
+
+    for (int i = 0; i < strlen(password); i++) {       // pour verifier  les criteres de  mot de passe
+        if (isupper(password[i])) hasUpper = 1;
+        if (islower(password[i])) hasLower = 1;
+        if (isdigit(password[i])) hasDigit = 1;
+    }
+
+    return strlen(password) >= 8 && hasUpper && hasLower && hasDigit && contient_special_char(password);
+}
+
+void sign_Up()                      //***fonction pour s'inscrire
+{
+    Utilisateur newuser;
+    printf("Entrez un nom d'utilisateur :\n");
+    scanf("%s", newuser.username);
+
+    while (1)
+        {
+        printf("Entrez un mot de passe :\n");
+        scanf("%s", newuser.password);
+
+        if (isPasswordOK(newuser.password, newuser.username))
+            {
+            break;
+            } else
+            {
+            printf("Mot de passe invalide.\n Il doit contient au moins 8 caracteres:\n une majuscule, une minuscule, un chiffre et un caractere special.\n Et ne doit pas contenir le nom d'utilisateur.\n");
+            }
+    }
+
+    printf("Choisissez un role (Administrateur, Agent, Client) :\n");
+    scanf("%s", newuser.role);
+
+    newuser.estVerrouille = 0;
+    user[usercount++] = newuser;                         // ajouter l'utilisateur sur le tableau
+    printf("Vous etes inscrie avec succes!\n\n");
+}
+
+
+   Utilisateur sign_In() {
+    char username[50], password[50];
+    int essai = 0;
+    Utilisateur utilisateurVide = {"", "", "", 0};  // Un utilisateur vide à retourner en cas d'échec
+
+    while (essai < 3) {
+        printf("Nom d'utilisateur :\n");
+        scanf("%s", username);
+        printf("Mot de passe :\n");
+        scanf("%s", password);
+
+        for (int i = 0; i < usercount; i++) {
+            if (strcmp(user[i].username, username) == 0 && strcmp(user[i].password, password) == 0) {
+                printf("Vous etes connecter avec succes!\n");
+                return user[i];  // Retourne l'utilisateur connecte
+            }
+        }
+
+        essai++;
+        printf("Identifiant ou mot de passe incorrect. %d tentatives restantes.\n", 3 - essai);
+    }
+
+
+    // Si echec apres plusieurs tentatives, retourner un utilisateur vide
+    return utilisateurVide;
+}
+
+
+int isAdministrateur(Utilisateur user)
+{
+    return strcmp(user.role, "Administrateur") == 0;
+}
+
+int isAgent(Utilisateur user)
+{
+    return strcmp(user.role, "Agent") == 0;
+}
+
+int isClient(Utilisateur user)
+{
+    return strcmp(user.role, "Client") == 0;
+}
 
 
 
+   void add_reclamation(char *client_nom)                    // fonction pour ajouter une reclamation
+   {
+    Reclamation newrec;
+    newrec.id = rand() % 10000;
 
- void add_reclamation(char * client_nom)                      // ***fonction pour ajouter une reclamation***
- {
-     Reclamation newrec;
-     newrec.id = rand() % 10000;
-     printf("Entrer le Motif de la reclamation:\n");
-     scanf(" %[^\n]s", newrec.motif);
+    printf("Entrer le motif de la reclamation :\n");
+    scanf("%s", newrec.motif);
+    printf("Entrer une description :\n");
+    scanf(" %[^\n]s", newrec.description);
+    printf("Entrer la categorie de la reclamation :\n");
+    scanf("%s", newrec.categorie);
 
-     printf("Entrer la description de la reclamation:\n");
-     scanf(" %[^\n]s", newrec.description);
-
-     printf("Entrer la categorie de la reclamation:\n");
-     scanf(" %[^\n]", newrec.categorie);
+    // Récupération automatique de la date actuelle
+    time_t now = time(NULL);
+    struct tm* local = localtime(&now);
+    strftime(newrec.date, sizeof(newrec.date), "%d/%m/%Y", local);
 
     newrec.priorite = attribuer_priorite(newrec.description);
-    strcpy(newrec.status, "en cours");              // les status est "en cours" par default
-    strcpy(newrec.client_nom, client_name);
+    strcpy(newrec.status, "en cours");
+    strcpy(newrec.client_nom, client_nom);
 
-    time_t t = time(NULL);
-    struct tm tm = *location(&t);
-    sprintf(newrec.date,"%02d/%02d/%04d", tm.tm_mday, tm.tm_mon +1, tm.tm_year + 1900);
+    newrec.date_ajout = now;
 
     rec[reccount++] = newrec;
-    printf("Reclamation ajoutee avec succes. Priorite : %d\n", newrec.priorite);
+    printf("Reclamation ajoutee avec succes ! Status : en cours . ID : %d \n", newrec.id);
+                            // Enregistre l'heure actuelle
+    newrec.date_ajout = now;
 
- }
 
-
-int client_modifier_supprimer(Reclamation rec, user currentUser)             // ***fonction pour le client peut modifier ou supprimer la reclamation
-    {
-    if (strcmp(rec.client_nom, currentuser.username) != 0)              // Verifier si le client est le proprietaire de la reclamation
-
-        printf("Vous n'avez pas le droit de modifier ou supprimer cette reclamation.\n");
-        return 0;
-    }
-
-                                                            // Verifier si la reclamation est encore "en cours"
-    if (strcmp(complaint.status, "en cours") != 0)
-        {
-        printf("Vous ne pouvez pas modifier ou supprimer une reclamation qui a deja ete traitee.\n");
-        return 0;
-        }
-
-                                            // Calculer la difference en heures entre la date de soumission et l'heure actuelle
-    struct tm tmSubmit = {0};
-    sscanf(rec.date, "%d/%d/%d", &tmSubmit.tm_mday, &tmSubmit.tm_mon, &tmSubmit.tm_year);
-    tmSubmit.tm_mon -= 1;             // Ajuster le mois
-    tmSubmit.tm_year -= 1900;        // Ajuster l'année
-
-    time_t submitTime = mktime(&tmSubmit);
-    time_t currentTime = time(NULL);
-    double differenceInHours = difftime(currentTime, submitTime) / 3600;                   // Convertir la difference en heures
-
-    if (differenceInHours > 24) {
-        printf("Vous ne pouvez pas modifier ou supprimer une reclamation soumise il y a plus de 24 heures.\n");
-        return 0;
-    }
-
-    return 1;                                   // La reclamation peut etre modifiee ou supprimee
 }
 
-void modifier_supprimer_reclamation(user currentuser)                //**** fonction pour modifier ou supprimer les reclamation
-{
-    int id, choix;
 
-    printf("Entrez ID de la reclamation que vous souhaitez modifier ou supprimer : ");
+
+
+
+
+void modifier_reclamation(Utilisateur currentuser)            // ***fonction pour modifier la reclamation
+{
+    int id, found = 0;
+    printf("Entrez l'ID de la reclamation a modifier :\n");
     scanf("%d", &id);
 
-                                              // Recherche de la reclamation par ID
-    int index = -1;
-    for (int i = 0; i < reccount; i++)
-        {
-        if (rec[i].id == id)
-        {
-            index = i;
+    for (int i = 0; i < reccount; i++) {
+        if (rec[i].id == id) {
+            found = 1;
+
+            // Verifier si l'utilisateur a les droits pour modifier la reclamation
+            if (isAdministrateur(currentuser) || isAgent(currentuser) ||
+                (isClient(currentuser) && strcmp(rec[i].client_nom, currentuser.username) == 0 && strcmp(rec[i].status, "en cours") == 0))
+            {
+                // Verifier si la relamation a ete enregistrer il y a moins de 24 heures
+                time_t now = time(NULL);
+                double diff_in_seconds = difftime(now, rec[i].date_ajout);
+
+                if (diff_in_seconds <= 86400) {  // 86400 secondes = 24 heures
+                    printf("Modification de la reclamation (ID : %d).\n", id);
+                    printf("Entrez le nouveau motif :\n");
+                    scanf("%s", rec[i].motif);
+                    printf("Entrez la nouvelle description :\n");
+                    scanf(" %[^\n]s", rec[i].description);
+                    printf("Entrez la nouvelle categorie :\n");
+                    scanf("%s", rec[i].categorie);
+
+                    printf("Reclamation modifiee avec succes!\n");
+                }
+                else
+                    {
+                    printf("La reclamation ne peut pas etre modifiee, car que 24 heures sont passees.\n");
+                    }
+            }
+            else
+                {
+                printf("Vous n'avez pas les droits pour modifier cette reclamation.\n");
+                }
             break;
         }
     }
 
-    if (index == -1)
-        {
-        printf("Reclamation non trouvee.\n");
-        return;
-        }
-
-                                          // Si l'utilisateur est un client, verifier  24h
-    if (isClient(currentuser))
-        {
-        if (!client_modifier_supprimer(rec[index], currentuser))
-        {
-            return;                                 // Si les conditions ne sont pas respectees, arreter  la fonction
-        }
-        }
-
-                                                     // Demander modifier ou supprimer
-    printf("Que souhaitez-vous faire ?\n1- Modifier la reclamation\n2- Supprimer la reclamation\n");
-    scanf("%d", &choix);
-
-    if (choix == 1)
-        {
-                                                             // modifier de la reclamation
-        printf("Entrez le nouveau motif de la reclamation : ");
-        scanf(" %[^\n]s", rec[index].motif);
-        printf("Entrez la nouvelle description de la reclamation : ");
-        scanf(" %[^\n]s", rec[index].description);
-        printf("Entrez la nouvelle categorie de la reclamation : ");
-        scanf(" %[^\n]s", rec[index].categorie);
-
-
-        printf("Reclamation modifiee avec succes.\n");
-
-        }
-        else if (choice == 2)
-            {
-                                                       // Supprimer  la reclamation
-        for (int i = index; i < reccount - 1; i++)
-        {
-            crec[i] = rec[i + 1];                       // decaler les elements dans le tableau
-        }
-        reccount--;                                     // reduire le nombre de reclamations
-
-        printf("Reclamation supprimee avec succes.\n");
-
-        }
-        else
-            {
-        printf("Choix invalide.\n");
-            }
+    if (!found)
+    {
+        printf("Reclamation avec ID %d non trouvee.\n", id);
+    }
 }
 
 
- void liste_reclamation(Utilisateur currentUser)                  //*** fonction pour afficher la liste des reclamations
+
+
+ void supprimer_reclamation(Utilisateur currentuser)                //*** fonction pour supprimer une reclamation
+{
+    int id, found = 0;
+    printf("Entrer ID de la reclamation a supprimer : ");
+    scanf("%d", &id);
+
+    for (int i = 0; i < reccount; i++) {
+        if (rec[i].id == id) {
+            found = 1;
+
+            // Verifier si l'utilisateur a les droits pour supprimer la réclamation
+            if (isAdministrateur(currentuser) || isAgent(currentuser) ||
+                (isClient(currentuser) && strcmp(rec[i].client_nom, currentuser.username) == 0 && strcmp(rec[i].status, "en cours") == 0))
+            {
+                // Verifier si la réclamation a ete soumise il y a moins de 24 heures
+                time_t now = time(NULL);
+                double diff_in_seconds = difftime(now, rec[i].date_ajout);
+
+                if (diff_in_seconds <= 86400) {  // 86400 secondes = 24 heures
+                    // Supprimer la réclamation (decaler le tableau)
+                    for (int j = i; j < reccount - 1; j++) {
+                        rec[j] = rec[j + 1];
+                    }
+                    reccount--;
+                    printf("Reclamation supprimee avec succes !\n");
+                }
+                 else
+                    {
+                    printf("La reclamation ne peut pas etre supprimee, car plus de 24 heures se sont ecoulees.\n");
+                    }
+            }
+            else
+                {
+                printf("Vous n'avez pas les droits pour supprimer cette reclamation.\n");
+                }
+            break;
+        }
+    }
+
+    if (!found)
+        {
+        printf("Reclamation avec ID %d non trouvee.\n", id);
+        }
+}
+
+ void liste_reclamation(Utilisateur currentuser)                  //*** fonction pour afficher la liste des reclamations
  {
                                                                 // Vérifier si l'utilsateur est administrateur ou an agent
-    if (!isAdministrateur(currentuser) && !isAgent(currentsser))
+    if (!isAdministrateur(currentuser) && !isAgent(currentuser))
     {
         printf("Acces refuse. Vous n'avez pas les droits pour afficher les reclamations.\n");
         return;
@@ -322,7 +302,7 @@ void modifier_supprimer_reclamation(user currentuser)                //**** fonc
         }
 
     printf("Liste des reclamations:\n");
-    printf("------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------\n");
     printf("%-5s %-15s %-20s %-10s %-10s %-15s\n", "ID", "Motif", "Description", "Client", "Statut", "Date");     // (%-5) sont des specificateur de formatage pour bien aligner les colones
 
                                                                           // Parcourir et afficher toutes les reclamations
@@ -331,7 +311,7 @@ void modifier_supprimer_reclamation(user currentuser)                //**** fonc
         {
         printf("%-5d %-15s %-20s %-10s %-10s %-15s\n",rec[i].id, rec[i].motif, rec[i].description, rec[i].client_nom, rec[i].status, rec[i].date);
         }
-    printf("------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------\n");
 }
 
 
@@ -340,7 +320,7 @@ void modifier_supprimer_reclamation(user currentuser)                //**** fonc
 void traiter_reclamation (Utilisateur currentuser)                  // ***fonction pour traiter une reclamation
 {
     int id, found = 0;
-    char newstatus[20];
+    char newstatus[20], status[20];
 
     printf("Entrer ID de la reclamation a traiter:\n");
     scanf("%d", &id);
@@ -375,89 +355,68 @@ void traiter_reclamation (Utilisateur currentuser)                  // ***foncti
 
 }
 
-void rechercher_reclamation (Utilisateur currentuser)                         // ***fonction pour rechercher une reclamation
+void rechercher_reclamation (Utilisateur currentuser)                       // ***fonction pour rechercher une reclamation
 {
     int choix, id, found = 0;
     char client_nom[50], status[50], categorie[50];
 
-    if ( (!isAdministrateur(currentuser) || !isAgent(currentuser)) )
-    {
+    if (!isAdministrateur(currentuser) && !isAgent(currentuser))
+        {
         printf("Vous n'avez pas le droit de rechercher une reclamation !\n");
-    }
+        return;
+        }
 
     printf("---------------Rechercher la reclamation par :---------------\n");
-    printf("1- Identifiant de la reclamation :\n");
+    printf("1- ID de la reclamation :\n");
     printf("2- Le nom du client :\n");
-    printf("3- Le status de la reclamation :\n");
-    printf("4- La categorie de la reclamation :\n\n");
-    printf("Entrer votre choix:\n");
+    printf("3- La categorie de la reclamation :\n\n");
+    printf("Entrez votre choix :\n");
+    scanf("%d", &choix);
 
     switch (choix)
     {
     case 1:
         printf("Entrer ID de la reclamation :\n");
         scanf("%d", &id);
-        for (int i = 0; i < reccount; i++)
-            {
-                if (rec[i].id == id) {
-                    found = 1;
-
-                    printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
-                    break;
-                }
+        for (int i = 0; i < reccount; i++) {
+            if (rec[i].id == id) {
+                found = 1;
+                printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",
+                       rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
+                break;
             }
-            break;
+        }
+        break;
     case 2:
         printf("Entrer le nom du client :\n");
         scanf(" %[^\n]s", client_nom);
-
-            for (int i = 0; i < reccount; i++)
-                {
-                if (strcmp(reccount[i].client_nom, client_nom) == 0)
-                    {
-                    found = 1;
-                    printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
-                    }
-                }
-                break;
+        for (int i = 0; i < reccount; i++) {
+            if (strcmp(rec[i].client_nom, client_nom) == 0) {
+                found = 1;
+                printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",
+                       rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
+            }
+        }
+        break;
     case 3:
-        printf("Entrer le status de la reclamation:\n");
-        scanf(" %[^\n]s", status);
-
-        for (int i = 0; i < reccount; i++)
-            {
-                if (strcmp(rec[i].status, status) == 0)
-                {
-                    found = 1;
-
-                    printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
-                }
-            }
-            break;
-    case 4:
-
-        printf("Entrer la categorie de la reclamation:\n");
+        printf("Entrer la categorie de la reclamation :\n");
         scanf("%s", categorie);
-
-        for (int i = 0; i < reccount; i++)
-            {
-                if (strcmp(rec[i].categorie, categorie) == 0)
-                {
-                    found = 1;
-
-                    printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
-                }
+        for (int i = 0; i < reccount; i++) {
+            if (strcmp(rec[i].categorie, categorie) == 0) {
+                found = 1;
+                printf("Reclamation trouvee : Motif : %s, Statut : %s, Client : %s, Date : %s\n",
+                       rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
             }
-            break;
-    default :
+        }
+        break;
+    default:
         printf("Choix invalide.\n");
         return;
     }
-    if (!found)
-        {
-            printf("Reclamation non trouvee.\n",id);
-        }
 
+    if (!found) {
+        printf("Reclamation non trouvee.\n");
+    }
 }
 
 void attribuer_priorite( char * description)                          // ***fonction pour detecter les mots de la priorite
@@ -480,49 +439,40 @@ void attribuer_priorite( char * description)                          // ***fonc
 
 void trier_reclamation_priorite()                      // ***fonction pour trier les reclamations par priorite
 {
-    Reclamation temp;
+    Reclamation valeur;
     for (int i = 0; i < reccount - 1; i++)
         {
         for (int j = i + 1; j < reccount; j++)
             {
             if (rec[i].priorite < rec[j].priorite)
                 {
-                    temp = rec[i];
+                    valeur = rec[i];
                     rec[i] = rec[j];
-                    rec[j] = temp;
+                    rec[j] = valeur;
                 }
 
             }
         }
 }
 
-void afficher_reclamation_priorite (User currentuser)     //  ***fonction pour afficher les reclamations triees par priorite
+void afficher_reclamation_priorite(Utilisateur currentuser)                   //*** fonction pour afficher la liste des rec triee par ordre priorite
 {
     if (!isAdministrateur(currentuser))
-        {
-        printf("Acces refusee , Vous n'avez pas les droit d'acceder au reclamations triees par priorite");
+    {
+        printf("Acces refuse. Vous n'avez pas les droits d'acceder au reclamations triees par priorite");
         return;
-        }
+    }
 
-     trier_reclamation_priorite();
-     printf("Reclamation triees par priorite:\n");
+    trier_reclamation_priorite();
 
-     for (int i = 0; i < reccount - 1; i++)
-     {
-        printf("ID : %d, Motif : %s, priorite : %d, Statut : %s, Client : %s, Date : %s\n",rec[i].id,rec[i].priorite,rec[i].motif, rec[i].status, rec[i].client_nom, rec[i].date);
+    printf("Reclamations triees par priorite:\n");
+    printf("%-5s %-15s %-20s %-10s %-10s %-15s\n", "ID", "Motif", "Description", "Client", "Statut", "Date");
 
-     }
+    for (int i = 0; i < reccount; i++)
+    {
+        printf("%-5d %-15s %-20s %-10s %-10s %-15s\n",
+               rec[i].id, rec[i].motif, rec[i].description, rec[i].client_nom, rec[i].status, rec[i].date);
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

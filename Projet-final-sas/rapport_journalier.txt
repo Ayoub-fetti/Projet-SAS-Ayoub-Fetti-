@@ -1,0 +1,14 @@
+Rapport journalier - 23/09/2024
+
+Nombre total de reclamations : 2
+
+Nouvelles reclamations soumises aujourd'hui :
+ID : 41, Motif : livraison, Client : ayoub, Statut : resolu
+ID : 8467, Motif : retard, Client : mohamed, Statut : rejecte
+
+Reclamations resolues aujourd'hui :
+Aucune reclamation resolue aujourd'hui.
+
+Statistiques :
+Nombre de nouvelles reclamations aujourd'hui : 2
+Nombre de reclamations resolues aujourd'hui : 0
