@@ -173,14 +173,13 @@ int isclient(Utilisateur user)
     strcpy(newrec.status, "en cours");
     strcpy(newrec.client_nom, client_nom);
 
-    newrec.date_ajout = now;
+    newrec.date_ajout = now;   // enregistre l'heure actuelle
 
     rec[reccount++] = newrec;
     printf("Reclamation ajoutee avec succes ! Status : en cours . ID : %d \n", newrec.id);
 
 
 
-    newrec.date_ajout = now;                         // enregistre l'heure actuelle
 
 
 }
@@ -276,7 +275,7 @@ void modifier_reclamation(Utilisateur currentuser)               //*** fonction 
                 time_t now = time(NULL);
                 double diff_in_seconds = difftime(now, rec[i].date_ajout);
 
-                if (diff_in_seconds <= 5)
+                if (diff_in_seconds <= 20)
                     {
                                                                // supprimer  la reclamation
                     for (int j = i; j < reccount - 1; j++)
@@ -687,7 +686,7 @@ void menu_principal(Utilisateur currentuser)
             printf("4- Deconnexion\n");
             }
 
-        printf("Entrez votre choix : ");
+        printf("Entrez votre choix :\n");
         scanf("%d", &choix);
 
                                                        // Gerer le choix de l'utilisateur
@@ -721,6 +720,7 @@ void menu_principal(Utilisateur currentuser)
                      break;
                 case 9:
                     printf("Deconnexion...\n");
+                    system("cls");
                     return;
                 default:
                     printf("Choix invalide. Veuillez reessayer.\n");
@@ -747,6 +747,7 @@ void menu_principal(Utilisateur currentuser)
                     break;
                 case 6:
                     printf("Deconnexion...\n");
+                    system("cls");
                     return;
                 default:
                     printf("Choix invalide. Veuillez reessayer.\n");
@@ -767,6 +768,7 @@ void menu_principal(Utilisateur currentuser)
                     break;
                 case 4:
                     printf("Deconnexion...\n");
+                    system("cls");
                     return;
                 default:
                     printf("Choix invalide. Veuiller reessayer.\n");
@@ -775,7 +777,8 @@ void menu_principal(Utilisateur currentuser)
     }
 }
 
-int main() {
+int main()
+{
     Utilisateur currentuser;
     int connecte = 0;
 
@@ -783,7 +786,7 @@ int main() {
         printf("\n--- Bienvenue dans l'Application de Gestion des Reclamations ---\n\n");
         printf("1- S'inscrire\n");
         printf("2- Se connecter\n");
-        printf("3- Quitter\n");
+        printf("3- Quitter le programme\n");
         printf("Entrez votre choix :\n");
 
         int choix;
@@ -796,6 +799,7 @@ int main() {
                 break;
             case 2:
                 currentuser = sign_In();
+                system("cls");
                 if (strcmp(currentuser.username, "") != 0) {  // Si l'utilisateur n'est pas vide la est connexion reussie
                     connecte = 1;
                     menu_principal(currentuser);
@@ -806,6 +810,7 @@ int main() {
             case 3:
                 printf("Au revoir !\n");
                 return 0;
+
             default:
                 printf("Choix invalide. Veuiller reessayer.\n");
         }
